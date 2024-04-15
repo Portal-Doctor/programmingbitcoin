@@ -20,6 +20,16 @@ def p2pkh_script(h160):
     return Script([0x76, 0xa9, h160, 0x88, 0xac])
 # end::source1[]
 
+def p2wpkh_script(pubkey_hash):
+    '''Generates a P2WPKH ScriptPubKey'''
+    if not isinstance(pubkey_hash, bytes):
+        raise TypeError("pubkey_hash must be in bytes")
+    if len(pubkey_hash) != 20:
+        raise ValueError("pubkey_hash must be exactly 20 bytes")
+    return Script([0x00,  # PUSH0, indicates a version 0 witness program
+                   0x14] +  # PUSH20, push the following 20 bytes
+                  list(pubkey_hash))  # pubkey_hash as a list of bytes
+
 
 LOGGER = getLogger(__name__)
 
