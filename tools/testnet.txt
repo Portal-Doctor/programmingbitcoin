@@ -1,0 +1,12 @@
+# print the transaction's serialization in hex
+
+https://coinfaucet.eu/en/btc-testnet/
+
+We sent 0.00013711 bitcoins to address
+tb1qzndeshkr5xsdh7m8ks9s0g6cy2966gfd6u5637
+
+tx: 6e08da198fbb9f6e682fd09240fd9a7d3a5e35f3836b60b2315e8b57ca7319d8
+Send coins back, when you don't need them anymore to the address
+
+tb1qerzrlxcfu24davlur5sqmgzzgsal6wusda40er
+
