@@ -1,5 +1,6 @@
 from unittest import TestCase, TestSuite, TextTestRunner
 
+from tx import TxFetcher
 import hashlib
 
 
@@ -105,16 +106,21 @@ def encode_varint(i):
 def h160_to_p2pkh_address(h160, testnet=False):
     '''Takes a byte sequence hash160 and returns a p2pkh address string'''
     # p2pkh has a prefix of b'\x00' for mainnet, b'\x6f' for testnet
-    # use encode_base58_checksum to get the address
-    raise NotImplementedError
+    if testnet:
+        prefix = b'\x6f'
+    else:
+        prefix = b'\x00'
+    return encode_base58_checksum(prefix + h160)
 
 
 def h160_to_p2sh_address(h160, testnet=False):
     '''Takes a byte sequence hash160 and returns a p2sh address string'''
     # p2sh has a prefix of b'\x05' for mainnet, b'\xc4' for testnet
-    # use encode_base58_checksum to get the address
-    raise NotImplementedError
-
+    if testnet:
+        prefix = b'\xc4'
+    else:
+        prefix = b'\x05'
+    return encode_base58_checksum(prefix + h160)
 
 class HelperTest(TestCase):
 
@@ -155,3 +161,10 @@ class HelperTest(TestCase):
         self.assertEqual(h160_to_p2sh_address(h160, testnet=False), want)
         want = '2N3u1R6uwQfuobCqbCgBkpsgBxvr1tZpe7B'
         self.assertEqual(h160_to_p2sh_address(h160, testnet=True), want)
+        
+    def test_verify_p2sh(self):
+        tx_id = '46df1a9484d0a81d03ce0ee543ab6e1a23ed06175c104a178268fad381216c2b'
+        testnet = True
+
+        tx = TxFetcher.fetch(tx_id, testnet=testnet)
+        self.assertTrue(tx.verify(), "The P2SH transaction did not verify correctly.")     
