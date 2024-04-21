@@ -687,41 +687,39 @@ def op_checksig(stack, z):
 def op_checksigverify(stack, z):
     return op_checksig(stack, z) and op_verify(stack)
 
-
 # tag::source1[]
 def op_checkmultisig(stack, z):
     if len(stack) < 1:
         return False
-    n = decode_num(stack.pop())
+    n = decode_num(stack.pop())  # Number of public keys
     if len(stack) < n + 1:
         return False
-    sec_pubkeys = []
-    for _ in range(n):
-        sec_pubkeys.append(stack.pop())
-    m = decode_num(stack.pop())
+    sec_pubkeys = [stack.pop() for _ in range(n)]
+    m = decode_num(stack.pop())  # Number of signatures required
     if len(stack) < m + 1:
         return False
-    der_signatures = []
-    for _ in range(m):
-        der_signatures.append(stack.pop()[:-1])  # <1>
-    stack.pop()  # <2>
+    der_signatures = [stack.pop()[:-1] for _ in range(m)]  # Remove hash type byte
+    stack.pop()  # Extra item due to off-by-one error in original Satoshi's implementation
+
+    points = [S256Point.parse(sec) for sec in sec_pubkeys]  # Parse public keys
+    sigs = [Signature.parse(der) for der in der_signatures]  # Parse signatures
+
     try:
-        # end::source1[]
-        # parse all the points
-        # parse all the signatures
-        # loop through the signatures
-            # if we have no more points, signatures are no good
-            # we loop until we find the point which works with this signature
-                # get the current point from the list of points
-                # we check if this signature goes with the current point
-        # the signatures are valid, so push a 1 to the stack
-        # tag::source1[]
-        raise NotImplementedError  # <3>
-    except (ValueError, SyntaxError):
+        for sig in sigs:
+            if not points:  # Not enough public keys
+                LOGGER.info("Signatures no good or not in right order")
+                return False
+            while points:
+                point = points.pop(0)
+                if point.verify(z, sig):
+                    break  # Signature verified, stop checking with this signature
+        stack.append(encode_num(1))  # Verification successful
+    except (ValueError, SyntaxError) as e:
+        LOGGER.info(f"Error in verifying signature: {str(e)}")
         return False
     return True
-# end::source1[]
 
+# end::source1[]
 
 def op_checkmultisigverify(stack, z):
     return op_checkmultisig(stack, z) and op_verify(stack)
